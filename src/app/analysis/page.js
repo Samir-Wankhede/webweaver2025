@@ -34,7 +34,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getTranscript, getSuspicionScore } from "@/utils/api";
 
 const suspiciousWords = {
   "scam": "Potential fraud-related term.",

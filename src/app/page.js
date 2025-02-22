@@ -45,6 +45,7 @@ export default function UploadPage() {
         const data = await response.json();
         localStorage.setItem("transcript", data.transcript);
         localStorage.setItem("score", data.score);
+        localStorage.setItem("verdict", data.verdict);
         router.push("/analysis");
       } else {
         alert("Upload failed!");
