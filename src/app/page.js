@@ -46,6 +46,8 @@ export default function UploadPage() {
         localStorage.setItem("transcript", data.transcript);
         localStorage.setItem("score", data.score);
         localStorage.setItem("verdict", data.verdict);
+        localStorage.setItem("map", data.map);
+        console.log(data.map)
         router.push("/analysis");
       } else {
         alert("Upload failed!");

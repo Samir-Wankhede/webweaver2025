@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { Storage } from "@google-cloud/storage";
 import { SpeechClient } from "@google-cloud/speech";
+const {
+    GoogleGenerativeAI,
+    HarmCategory,
+    HarmBlockThreshold,
+} = require("@google/generative-ai");
 import path from "path";
 import fs from "fs";
 
@@ -19,6 +24,12 @@ process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
 
 const storage = new Storage();
 const speechClient = new SpeechClient();
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash",
+});
 
 const BUCKET_NAME = process.env.GCS_BUCKET_NAME;
 const PROCESSED_BUCKET = process.env.GCS_PROCESSED_BUCKET_NAME;
@@ -100,7 +111,18 @@ export async function POST(req) {
     })
     const verdict = await resp.json();
     const score = verdict[1];
-    return NextResponse.json({ transcript: transcript, score: score, verdict: verdict[0] }, { status: 200 });
+    
+    //gen ai
+    const promptText = "In the transcript of call that I'll be giving, based on context find words that are suspicious pointing to a scam (words like anydesk and more) give me only a javascript object in the format {'phrase': 'reason'} so that I can stringyfy it and send, return only {} when nothing found, dont give any extra text except this ever. Here's the transcript: ";
+    const prompt = promptText + transcript;
+    try{
+        const result = await model.generateContent(prompt);
+        const mappedWords = result.response.text().trim();
+        return NextResponse.json({ transcript: transcript, score: score, verdict: verdict[0], map: JSON.stringify(mappedWords) }, { status: 200 });
+    }catch(err){
+        console.log(err);
+        return NextResponse.json({ error: "Failed to map audio words" }, { status: 500 });
+    }
 
   } catch (error) {
     console.error("Error:", error);
