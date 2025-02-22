@@ -93,8 +93,8 @@ export default function ProcessingPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const transcriptResponse = await getTranscript();
-      const scoreResponse = await getSuspicionScore();
+      const transcriptResponse = await localStorage.getItem("transcript");
+      const scoreResponse = await parseInt(localStorage.getItem("score"));
       
       setTranscript(transcriptResponse || "Failed to load transcript.");
       setSuspicionScore(scoreResponse || 50);

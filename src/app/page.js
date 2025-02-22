@@ -36,13 +36,16 @@ export default function UploadPage() {
     formData.append("audio", file);
 
     try {
-      const response = await fetch("/api/upload", {
+      const response = await fetch("/api/transcript", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        router.push("/processing");
+        const data = await response.json();
+        localStorage.setItem("transcript", data.transcript);
+        localStorage.setItem("score", data.score);
+        router.push("/analysis");
       } else {
         alert("Upload failed!");
       }

@@ -90,7 +90,17 @@ export async function POST(req) {
     const [response] = await speechClient.recognize(request);
     const transcript = response.results.map((r) => r.alternatives[0].transcript).join("\n");
     await processedFile.delete();
-    return NextResponse.json({ transcript }, { status: 200 });
+    console.log(transcript);
+    const resp = await fetch(process.env.PROCESSORAPI,{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body:JSON.stringify({
+            text: transcript,
+        })
+    })
+    const verdict = await resp.json();
+    const score = verdict[1];
+    return NextResponse.json({ transcript: transcript, score: score, verdict: verdict[0] }, { status: 200 });
 
   } catch (error) {
     console.error("Error:", error);
