@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Loader } from "lucide-react";
+import { Upload, Loader, Mic, StopCircle } from "lucide-react";
 
 export default function UploadPage() {
   const [file, setFile] = useState(null);
   const [audioURL, setAudioURL] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
   const router = useRouter();
 
   const scamFacts = [
@@ -27,8 +30,36 @@ export default function UploadPage() {
     }
   };
 
+  const handleStartRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+    audioChunksRef.current = [];
+    setRecording(true);
+
+    mediaRecorder.ondataavailable = (event) => {
+      audioChunksRef.current.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      setAudioURL(audioUrl);
+      setFile(new File([audioBlob], "recorded_audio.wav", { type: "audio/wav" }));
+    };
+
+    mediaRecorder.start();
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
+  };
+
   const handleUpload = async () => {
-    if (!file) return alert("Please select a file first!");
+    if (!file) return alert("Please select or record an audio file first!");
 
     setUploading(true);
 
@@ -68,13 +99,32 @@ export default function UploadPage() {
 
       {/* Upload Box */}
       <div className="bg-zinc-900 p-8 rounded-2xl shadow-xl w-96 text-center transform transition-all hover:scale-105 hover:shadow-orange-300">
-        <h2 className="text-2xl font-bold text-orange-300">Upload Audio</h2>
+        <h2 className="text-2xl font-bold text-orange-300">Upload or Record Audio</h2>
 
         <label className="mt-4 flex items-center justify-center border-2 border-dashed border-orange-300 p-6 rounded-lg cursor-pointer hover:bg-orange-300 hover:text-black transition-all">
           <Upload className="w-6 h-6 mr-2" />
           <span className="font-semibold">{file ? file.name : "Choose File"}</span>
           <input type="file" accept="audio/*" onChange={handleFileChange} className="hidden" />
         </label>
+
+        {/* Recording Controls */}
+        <div className="flex justify-center mt-4">
+          {recording ? (
+            <button
+              onClick={handleStopRecording}
+              className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              <StopCircle className="w-6 h-6 mr-2" /> Stop Recording
+            </button>
+          ) : (
+            <button
+              onClick={handleStartRecording}
+              className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+              <Mic className="w-6 h-6 mr-2" /> Start Recording
+            </button>
+          )}
+        </div>
 
         {audioURL && (
           <div className="mt-6">
@@ -118,3 +168,5 @@ export default function UploadPage() {
     </div>
   );
 }
+
+
