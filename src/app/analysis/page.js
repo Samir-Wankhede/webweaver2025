@@ -15,18 +15,10 @@ export default function AnalysisPage() {
     setLoading(false);
   }, []);
 
-  let verdictColor = "bg-green-600";
-  let verdictText = "✅ Low Risk";
-  let showReportButton = false;
-
-  if (suspicionScore > 70) {
-    verdictColor = "bg-red-600";
-    verdictText = "🔥 High Risk";
-    showReportButton = true;
-  } else if (suspicionScore > 40) {
-    verdictColor = "bg-orange-500";
-    verdictText = "⚠️ Moderate Risk";
-  }
+  const isSus = verdict.toLowerCase() === "sus";
+  const verdictColor = isSus ? "bg-red-600" : "bg-green-600";
+  const verdictText = isSus ? "🚨 Suspicious" : "✅ Not Suspicious";
+  const showReportButton = isSus;
 
   function reportScam() {
     window.open("https://cybercrime.gov.in/", "_blank");
@@ -36,7 +28,9 @@ export default function AnalysisPage() {
     <div className="flex flex-col items-center justify-center h-screen bg-black text-white space-y-6">
       {/* Verdict Box */}
       <div className={`w-3/4 p-4 rounded-lg shadow-xl text-center text-lg font-bold ${verdictColor}`}>
-        ScamShield Verdict: {verdictText} ({suspicionScore}%)
+        ScamShield Verdict: {verdictText}
+        <br />
+        <span className="text-sm">I am {suspicionScore}% sure that this verdict is correct.</span>
       </div>
 
       {/* Processing Indicator */}
@@ -51,7 +45,7 @@ export default function AnalysisPage() {
         </div>
       )}
 
-      {/* Report Button (Only for High-Risk Calls) */}
+      {/* Report Button (Only for Suspicious Calls) */}
       {showReportButton && (
         <button 
           onClick={reportScam} 
