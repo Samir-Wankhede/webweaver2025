@@ -14,7 +14,9 @@
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-dropzone": "^14.3.5"
+    "react-dropzone": "^14.3.5",
+    "@google-cloud/speech": "^6.7.0",
+    "@google-cloud/storage": "^7.15.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
